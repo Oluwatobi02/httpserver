@@ -1,25 +1,36 @@
-import socket  # noqa: F401
-from app.req_parser import parse_get, parse_header
+import socket
+from concurrent.futures import ThreadPoolExecutor
+from app.handle_connections import handle_connections
+
+HOST = "localhost"
+PORT = 4221
+MAX_WORKERS = 10  # Maximum concurrent threads
+
 
 def main():
-    # You can use print statements as follows for debugging, they'll be visible when running tests.
-    print("Logs from your program will appear here!")
+    print(f"Server started, listening on {HOST}:{PORT}")
 
-    # Uncomment this to pass the first stage
-    #
-    while True:
-        server_socket = socket.create_server(("localhost", 4221), reuse_port=True)
-        conn, address = server_socket.accept() # wait for client
-        message = conn.recv(8000).decode('utf-8')
-        message = message.split('\n')
-        get_info = parse_get(message[0])
-        header_info = parse_header(message[1:-2])
-        if get_info['path'] != '/':
-            conn.sendall(b'HTTP/1.1 404 Not Found\r\n\r\n')
-        else:
-            conn.sendall(b'HTTP/1.1 200 OK\r\n\r\n')
-
+    # Create a TCP server socket
+    with socket.create_server((HOST, PORT), reuse_port=True) as server_socket:
+        server_socket.settimeout(5)  # Optional timeout
+        with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+            while True:
+                try:
+                    # Accept a connection from a client
+                    conn, address = server_socket.accept()
+                    print(f"Connection received from {address}")
+                    
+                    # Delegate the connection to a thread
+                    executor.submit(handle_connections, conn, address)
+                except socket.timeout:
+                    # Continue the loop after timeout
+                    continue
+                except Exception as e:
+                    print(f"Error accepting connection: {e}")
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("Shutting down server gracefully")

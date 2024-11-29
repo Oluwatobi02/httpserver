@@ -2,7 +2,7 @@ import socket
 from concurrent.futures import ThreadPoolExecutor
 from app.handle_connections import handle_connections
 
-HOST = "localhost"
+HOST = "0.0.0.0"
 PORT = 4221
 MAX_WORKERS = 10  # Maximum concurrent threads
 

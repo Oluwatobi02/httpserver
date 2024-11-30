@@ -3,7 +3,6 @@ from app.response import Response
 def make_process_user_agent():
     def process_user_agent(request: Request):
         user_agent = request.get_headers().get('User-Agent', 'Not there')
-        print(type(user_agent))
         response = Response()
         response.set_header('Content-Type', 'text/plain')
         response.set_header('Connection', 'keep-alive')

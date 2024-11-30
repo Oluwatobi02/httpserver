@@ -20,5 +20,4 @@ def handle_connections(client : socket.socket, address):
             client.send(response)
         except Exception as e:
             print(f"Error handling request: {e}")
-            # break
-    # client.close()
+            
